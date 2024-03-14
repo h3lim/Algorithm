@@ -1,33 +1,46 @@
 from typing import List
+from collections import deque
+
+from typing import List
+from collections import deque
+
+from typing import List
+from collections import deque
+
 
 class Solution:
     def canFinish(self, numCourses: int, prerequisites: List[List[int]]) -> bool:
-        map = {i : [] for i in range(numCourses)}
+        # Create a graph with an adjacency list and count of incoming edges for each node
+        graph = [[] for _ in range(numCourses)]
+        incoming_edges = [0] * numCourses
 
-        for c, p in prerequisites:
-            map[c].append(p)
+        # Build the graph and count the incoming edges
+        for dest, src in prerequisites:
+            graph[src].append(dest)
+            incoming_edges[dest] += 1
 
-        visited = set()
+        # Initialize a queue with all nodes having no incoming edges
+        queue = deque([i for i in range(numCourses) if incoming_edges[i] == 0])
 
-        def dfs(c):
-            if c in visited:
-                return False
-            if map[c] == []:
-                return True
+        # Count of courses that can be completed (used for detecting cycles)
+        completed_courses = 0
 
-            visited.add(c)
+        while queue:
+            node = queue.popleft()
+            completed_courses += 1
 
-            for p in map[c]:
-                if not dfs(p): return False
-            visited.remove(c)
-            map[c] = []
-            return True
+            # Decrease the incoming edge count for all neighbors
+            for neighbor in graph[node]:
+                incoming_edges[neighbor] -= 1
 
-        for c in range(numCourses):
-            if not dfs(c): return False
-        return True
+                # If a neighbor has no more incoming edges, add it to the queue
+                if incoming_edges[neighbor] == 0:
+                    queue.append(neighbor)
 
+        # If the count of completed courses equals the total number of courses, return True
+        return completed_courses == numCourses
 
 Solution = Solution()
 
-print(Solution.canFinish(6,[[2,1],[3,1],[2,3],[4,2],[5,4]]))
+print(Solution.canFinish(numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]))
+
